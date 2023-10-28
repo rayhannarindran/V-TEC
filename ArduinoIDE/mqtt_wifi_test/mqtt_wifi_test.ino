@@ -2,10 +2,10 @@
 #include <PubSubClient.h>
 #include <ESP32Ping.h>
 
-const char* ssid = "Narindrans iPhone";
-const char* password = "rayhan07";
+const char* ssid = "WIFI NAME HERE";
+const char* password = "WIFI PASSWORD HERE";
 
-const char* mqtt_server = "172.20.10.7";
+const char* mqtt_server = "MQTT SERVER/BROKER IP HERE";
 
 WiFiClient espClient;
 PubSubClient client;
