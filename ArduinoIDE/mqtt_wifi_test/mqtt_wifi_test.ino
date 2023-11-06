@@ -2,10 +2,10 @@
 #include <PubSubClient.h>
 #include <ESP32Ping.h>
 
-const char* ssid = "WIFI NAME HERE";
-const char* password = "WIFI PASSWORD HERE";
+const char* ssid = "0826";
+const char* password = "puputpuput12";
 
-const char* mqtt_server = "MQTT SERVER/BROKER IP HERE";
+const char* mqtt_server = "192.168.1.20";
 
 WiFiClient espClient;
 PubSubClient client;
@@ -30,23 +30,18 @@ void setup(){
     client.setClient(espClient);
     client.setServer(mqtt_server, 1883);
     delay(200);
+    ping_server();
+    delay(200);
 }
 
 void loop(){
-    if (WiFi.status() == WL_CONNECTED){
-      Serial.println("Wifi is connected!");
-      Serial.println(WiFi.localIP());
-    }
-
-    ping_server();
-
     if (!client.connected())
     {
       reconnect();
     }
     client.loop();
 
-    client.publish("test", "This is a payload");
+    client.publish("data", "This is a payload");
     delay(250);
 }
 
