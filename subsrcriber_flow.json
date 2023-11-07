@@ -1,0 +1,79 @@
+[
+    {
+        "id": "fa11ac98f216a6fc",
+        "type": "tab",
+        "label": "Subscriber",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "d85ba27350a827c2",
+        "type": "mqtt in",
+        "z": "fa11ac98f216a6fc",
+        "name": "Subscriber",
+        "topic": "data",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "1012913c31228e3b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 260,
+        "y": 220,
+        "wires": [
+            [
+                "ae2ac1b2ce92ea6b"
+            ]
+        ]
+    },
+    {
+        "id": "ae2ac1b2ce92ea6b",
+        "type": "debug",
+        "z": "fa11ac98f216a6fc",
+        "name": "Data Topic",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 430,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "1012913c31228e3b",
+        "type": "mqtt-broker",
+        "name": "OrangePi",
+        "broker": "172.20.10.10",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]

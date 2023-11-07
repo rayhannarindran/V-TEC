@@ -4,10 +4,10 @@
 #include <PubSubClient.h>
 #include <ESP32Ping.h>
 
-const char* ssid = "0826";
-const char* password = "puputpuput12";
+const char* ssid = "Narindrans iPhone";
+const char* password = "rayhan07";
 
-const char* mqtt_server = "192.168.1.20";
+const char* mqtt_server = "172.20.10.10";
 
 WiFiClient espClient;
 PubSubClient client;
@@ -53,10 +53,12 @@ void loop(){
     float object_temp = 10;
     float ambient_temp = 15;
     float heart_rate = 90;
+    float spo2 = 100;
 
     doc["ot"] = object_temp;
     doc["at"] = ambient_temp;
     doc["hr"] = heart_rate;
+    doc["spo"] = spo2;
 
     //Serialized Json dan Sending
     serializeJson(doc, output);
