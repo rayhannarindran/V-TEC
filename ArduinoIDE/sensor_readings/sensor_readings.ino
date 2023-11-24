@@ -2,18 +2,6 @@
 #include "MAX30105.h"
 #include "spo2_algorithm.h"
 #include <Adafruit_MLX90614.h>
-#include <ArduinoJson.h>
-#include <ArduinoJson.hpp>
-#include <WiFi.h>
-#include <PubSubClient.h>
-#include <ESP32Ping.h>
-
-const char* ssid = "Narindrans iPhone";
-const char* password = "rayhan07";
-const char* mqtt_server = "172.20.10.10";
-
-WiFiClient espClient;
-PubSubClient client;
 
 MAX30105 particleSensor;
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
@@ -36,31 +24,9 @@ int8_t validSPO2; //indicator to show if the SPO2 calculation is valid
 int32_t heartRate; //heart rate value
 int8_t validHeartRate; //indicator to show if the heart rate calculation is valid
 
-unsigned long dataDelay;
-
 void setup()
 {
   Serial.begin(115200); // initialize serial communication at 115200 bits per second:
-  delay(1000);
-
-  WiFi.mode(WIFI_STA); //Optional
-  WiFi.begin(ssid, password);
-  Serial.println("\nConnecting");
-
-  while(WiFi.status() != WL_CONNECTED){
-      Serial.print(".");
-      delay(100);
-  }
-
-  Serial.println("\nConnected to the WiFi network");
-  Serial.print("Local ESP32 IP: ");
-  Serial.println(WiFi.localIP());
-
-  client.setClient(espClient);
-  client.setServer(mqtt_server, 1883);
-  delay(200);
-  ping_server();
-  delay(200);
 
   // Initialize sensor
   if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //Use default I2C port, 400kHz speed
@@ -86,6 +52,9 @@ void setup()
   int adcRange = 4096; //Options: 2048, 4096, 8192, 16384
 
   particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange); //Configure sensor with these settings
+
+  Serial.print("Emissivity = "); Serial.println(mlx.readEmissivity());
+  Serial.println("================================================");
 }
 
 void loop()
@@ -114,19 +83,6 @@ void loop()
   //Continuously taking samples from MAX30102.  Heart rate and SpO2 are calculated every 1 second
   while (1)
   {
-    dataDelay = millis();
-
-    if (!client.connected())
-    {
-      reconnect();
-    }
-
-    client.loop();
-
-    //Data Temporary
-    StaticJsonDocument<80> doc;
-    char output[80];
-
     //dumping the first 25 sets of samples in the memory and shift the last 75 sets of samples to the top
     for (byte i = 25; i < 100; i++)
     {
@@ -153,71 +109,11 @@ void loop()
 
       Serial.print(F(", Object Temp = "));
       Serial.print(mlx.readObjectTempC(), DEC);
-      Serial.printl(" C");
-
-      Serial.print(F(", Ambient Temp = "));
-      Serial.print(mlx.readAmbientTempC(), DEC);
       Serial.println(" C");
-
-      // Setiap 3 detik, data dikirim
-      if ((dataDelay - 24) % 3000 < 1){
-        doc["ot"] = mlx.readObjectTempC();
-        doc["at"] = mlx.readAmbientTempC();
-
-        if (heartRate >= 0){
-          doc["hr"] = heartRate;
-        } else {
-          doc["hr"] = 0
-        }
-
-        if (spo2 >= 0){
-          doc["spo"] = spo2;
-        } else {
-          doc["spo"] = 0
-        }
-
-        //Serialized Json dan Sending
-        serializeJson(doc, output);
-        //Serial.println(output);
-        client.publish("data", output);
-      }
-
     }
 
     //After gathering 25 new samples recalculate HR and SP02
     maxim_heart_rate_and_oxygen_saturation(irBuffer, bufferLength, redBuffer, &spo2, &validSPO2, &heartRate, &validHeartRate);
-  }
-}
-
-void ping_server(){
-    Serial.println("Testing Server Connection...");
-    bool ping_server = Ping.ping(mqtt_server);
-    
-    if (ping_server){
-      Serial.println("Connected to server");
-    } else {
-      Serial.println("NOT Connected to server");
-    }
-}
-
-void reconnect(){
-  while (!client.connected())
-  {
-    Serial.println("Attempting Connection...");
-
-    String clientId = "ESP32Client-";
-    clientId += String(random(0xffff), HEX);
-
-    ping_server();
-
-    if (client.connect(clientId.c_str()))
-    {
-      Serial.println("Connected");
-    } else {
-      Serial.print("Failed, code=");
-      Serial.println(client.state());
-      delay(5000);
-    }
   }
 }
 
