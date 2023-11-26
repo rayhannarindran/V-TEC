@@ -63,7 +63,7 @@ void setup()
   delay(200);
 
   // Initialize sensor
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //Use default I2C port, 400kHz speed
+  if (!particleSensor.begin(Wire, 115200)) //Use default I2C port, 400kHz speed
   {
     Serial.println(F("MAX30105 was not found. Please check wiring/power."));
     while (1);
@@ -86,6 +86,8 @@ void setup()
   int adcRange = 4096; //Options: 2048, 4096, 8192, 16384
 
   particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange); //Configure sensor with these settings
+  Serial.print("Emissivity = "); Serial.println(mlx.readEmissivity());
+  Serial.println("================================================");
 }
 
 void loop()
@@ -143,49 +145,46 @@ void loop()
       redBuffer[i] = particleSensor.getRed();
       irBuffer[i] = particleSensor.getIR();
       particleSensor.nextSample(); //We're finished with this sample so move to next sample
-
-      //send samples and calculation result to terminal program through UART
-      Serial.print(F(", HR = "));
-      Serial.print(heartRate, DEC);
-
-      Serial.print(F(", SPO2 = "));
-      Serial.print(spo2, DEC);
-
-      Serial.print(F(", Object Temp = "));
-      Serial.print(mlx.readObjectTempC(), DEC);
-      Serial.printl(" C");
-
-      Serial.print(F(", Ambient Temp = "));
-      Serial.print(mlx.readAmbientTempC(), DEC);
-      Serial.println(" C");
-
-      // Setiap 3 detik, data dikirim
-      if ((dataDelay - 24) % 3000 < 1){
-        doc["ot"] = mlx.readObjectTempC();
-        doc["at"] = mlx.readAmbientTempC();
-
-        if (heartRate >= 0){
-          doc["hr"] = heartRate;
-        } else {
-          doc["hr"] = 0
-        }
-
-        if (spo2 >= 0){
-          doc["spo"] = spo2;
-        } else {
-          doc["spo"] = 0
-        }
-
-        //Serialized Json dan Sending
-        serializeJson(doc, output);
-        //Serial.println(output);
-        client.publish("data", output);
-      }
-
     }
+
+    //send samples and calculation result to terminal program through UART
+    Serial.print(F("HR = "));
+    Serial.println(heartRate, DEC);
+
+    Serial.print(F("SPO2 = "));
+    Serial.println(spo2, DEC);
+
+    Serial.print(F("Object Temp = "));
+    Serial.print(mlx.readObjectTempC());
+    Serial.println(" C");
+
+    Serial.print(F("Ambient Temp = "));
+    Serial.print(mlx.readAmbientTempC());
+    Serial.println(" C");
+
+    doc["ot"] = mlx.readObjectTempC();
+    doc["at"] = mlx.readAmbientTempC();
+
+    if (heartRate >= 0){
+      doc["hr"] = heartRate;
+    } else {
+      doc["hr"] = 0;
+    }
+
+    if (spo2 >= 0){
+      doc["spo"] = spo2;
+    } else {
+      doc["spo"] = 0;
+    }
+
+    //Serialized Json dan Sending
+    serializeJson(doc, output);
+    //Serial.println(output);
+    client.publish("data", output);
 
     //After gathering 25 new samples recalculate HR and SP02
     maxim_heart_rate_and_oxygen_saturation(irBuffer, bufferLength, redBuffer, &spo2, &validSPO2, &heartRate, &validHeartRate);
+    delay(250);
   }
 }
 
